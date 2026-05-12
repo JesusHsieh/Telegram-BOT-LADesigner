@@ -1,0 +1,67 @@
+[
+  {
+    "work_item_id": "work-001",
+    "category": "整地工程",
+    "item_name": "基地清理與整地",
+    "unit": "m2",
+    "quantity_rule": "依實際施作面積估算",
+    "cost_level": "中",
+    "labor_factor": "中",
+    "risk_factor": "既有構造物、垃圾清運、土方去化與施工動線可能提高風險",
+    "related_materials": [],
+    "required_info": ["施作面積", "既有鋪面或植栽狀況", "清運距離"],
+    "note": "常作為景觀工程前置工項，需確認清運與保護範圍。"
+  },
+  {
+    "work_item_id": "work-002",
+    "category": "鋪面工程",
+    "item_name": "鋪面基層與面層施工",
+    "unit": "m2",
+    "quantity_rule": "依鋪面面積、材料厚度與基層工法估算",
+    "cost_level": "中高",
+    "labor_factor": "中",
+    "risk_factor": "基層不足、排水坡度不良、材料色差與收邊細節容易造成追加或重工",
+    "related_materials": ["高壓混凝土磚", "燒面花崗石"],
+    "required_info": ["鋪面面積", "材料規格", "基層厚度", "排水坡度", "收邊做法"],
+    "note": "需分開確認材料、基層、收邊、伸縮縫與排水。"
+  },
+  {
+    "work_item_id": "work-003",
+    "category": "喬木種植",
+    "item_name": "喬木採購與種植",
+    "unit": "株",
+    "quantity_rule": "依喬木數量、規格、支架與土壤改良需求估算",
+    "cost_level": "高",
+    "labor_factor": "中高",
+    "risk_factor": "苗木規格、吊運動線、覆土深度、排水與保固養護會影響成本",
+    "related_materials": ["植栽介質", "支架", "排水層"],
+    "required_info": ["喬木數量", "胸徑或高度", "樹穴尺寸", "覆土深度", "吊運條件", "養護期"],
+    "note": "頂板或屋頂區需特別確認荷重、排水與防水層保護。"
+  },
+  {
+    "work_item_id": "work-004",
+    "category": "景觀照明",
+    "item_name": "景觀燈具與配線",
+    "unit": "組",
+    "quantity_rule": "依燈具數量、型式、配線距離與控制方式估算",
+    "cost_level": "中高",
+    "labor_factor": "中",
+    "risk_factor": "電源點、管線路徑、防水等級與控制系統不明時容易漏列",
+    "related_materials": ["照明", "配管", "控制器"],
+    "required_info": ["燈具數量", "燈具規格", "電源位置", "配線距離", "控制方式"],
+    "note": "需與機電、排水、植栽位置協調，避免後續衝突。"
+  },
+  {
+    "work_item_id": "work-005",
+    "category": "水景工程",
+    "item_name": "水景設備與防水",
+    "unit": "式",
+    "quantity_rule": "依水景型式、面積、水量、設備與防水做法估算",
+    "cost_level": "高",
+    "labor_factor": "高",
+    "risk_factor": "防水、機電、補水、排水、水質維護與噪音控制皆屬高風險",
+    "related_materials": ["水景", "防水層", "幫浦", "過濾設備"],
+    "required_info": ["水景尺寸", "水深", "設備規格", "防水做法", "補排水位置", "維護方式"],
+    "note": "MVP 階段只做風險提醒，不做正式估價。"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "material_id": "paving-001",
+    "category": "鋪面",
+    "name": "高壓混凝土磚",
+    "style": "現代,自然,社區公共空間",
+    "cost_level": "中",
+    "maintenance_level": "中",
+    "durability": "中高",
+    "construction_difficulty": "中",
+    "suitable_scene": "社區步道、中庭鋪面、可局部維修區",
+    "avoid_scene": "重車頻繁區、要求高度精品石材質感區",
+    "carbon_level": "中",
+    "risk_note": "需注意基層夯實、排水坡度、邊界收邊與色差批次。",
+    "source": "starter_dataset",
+    "confidence": "中"
+  },
+  {
+    "material_id": "paving-002",
+    "category": "鋪面",
+    "name": "燒面花崗石",
+    "style": "飯店感,高質感,現代",
+    "cost_level": "高",
+    "maintenance_level": "低",
+    "durability": "高",
+    "construction_difficulty": "中高",
+    "suitable_scene": "社區入口、迎賓廣場、主要動線",
+    "avoid_scene": "預算敏感區、大面積低成本鋪面",
+    "carbon_level": "高",
+    "risk_note": "需確認止滑係數、厚度、石材色差、排水坡度與收邊細節。",
+    "source": "starter_dataset",
+    "confidence": "中"
+  },
+  {
+    "material_id": "deck-001",
+    "category": "木平台",
+    "name": "再生木平台",
+    "style": "自然,休閒,屋頂花園",
+    "cost_level": "中高",
+    "maintenance_level": "中",
+    "durability": "中",
+    "construction_difficulty": "中",
+    "suitable_scene": "屋頂休憩區、中庭平台、親子活動區",
+    "avoid_scene": "長期潮濕不通風、重載或高磨耗區",
+    "carbon_level": "中",
+    "risk_note": "需注意龍骨間距、排水通風、熱脹冷縮與表面防滑。",
+    "source": "starter_dataset",
+    "confidence": "中"
+  }
+]
