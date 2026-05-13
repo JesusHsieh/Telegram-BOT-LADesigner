@@ -33,32 +33,33 @@ export async function handleCommand(input: string, user: TelegramUserContext): P
 export function formatStartMessage(user: TelegramUserContext): string {
   const role = getAccessRole(user);
   const isAllowed = role !== "blocked";
+  const greetingName = user.firstName ?? user.username ?? "你好";
 
   return [
-    "歡迎使用 LA Design Assistant。",
+    `${greetingName}，歡迎來到 LA Design Assistant。`,
     "",
-    "這是一個景觀設計 Telegram AI 助理，目前定位為公司內部橋接型 bot。",
+    "我是你的景觀設計工作助理，會先幫你把需求整理成可以執行的任務，再依照任務方向接到目前的 mock n8n / mock NAS bridge。未來接上公司資料後，我會協助把 Telegram 變成進入內部設計流程的入口。",
     "",
-    "我可以協助：",
-    "- 設定目前工作專案",
-    "- 整理基地、現場、植栽、成本、RFI、簡報、審查與檢核任務",
-    "- 依 Task Router 判斷任務方向",
-    "- 以 mock n8n / mock NAS bridge 驗證未來工作流",
-    "- 產生任務摘要與 Markdown 報告",
+    "你可以把我當成：",
+    "- 專案前期資料整理員",
+    "- 景觀設計任務分流器",
+    "- 植栽、成本、RFI、簡報與檢核草稿助手",
+    "- 未來串接 n8n / NAS / 內部工具的安全入口",
     "",
-    "目前狀態：",
+    "我目前能先協助你：設定工作專案、建立任務、整理 mock 資料、產生摘要與 Markdown 報告。",
+    "",
+    "你的狀態：",
     `- 你的 Telegram user id：${user.id ?? "無法取得"}`,
     `- 你的角色：${getAccessRoleLabel(role)}`,
     `- 使用權限：${isAllowed ? "已授權" : "尚未授權"}`,
     "",
     isAllowed
-      ? "開始方式：先使用 /project set [project_id] 設定專案，再使用 /do、/find、/read、/make 等任務指令。"
-      : "請把上方 Telegram user id 提供給系統擁有者，請對方用 /auth add [user_id] 加入授權。",
+      ? "我們可以開始了。建議先設定一個工作專案，之後我才知道所有任務要放在哪個上下文裡。"
+      : "你目前還沒有使用權限。請把上方 Telegram user id 傳給系統擁有者，請對方用 /auth add [user_id] 幫你加入授權。",
     "",
-    "常用指令：",
+    "你可以先試：",
     "/help",
     "/whoami",
-    "/policy",
     "/project set nangang_airport",
     "/do brief 簡報需求",
     "/make report"
