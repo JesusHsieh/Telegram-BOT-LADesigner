@@ -23,7 +23,7 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<void
     firstName: user.firstName,
     role: getAccessRole(user),
     messageId: message.message_id,
-    text: message.text ?? message.caption
+    textPreview: redactMessageText(message.text ?? message.caption)
   });
 
   if (!canUseBot(user)) {
@@ -75,6 +75,16 @@ export async function getTelegramUpdates(offset?: number): Promise<TelegramUpdat
   return result as TelegramUpdate[];
 }
 
+export async function getTelegramWebhookInfo(): Promise<{ url?: string; pending_update_count?: number }> {
+  return (await callTelegramApi("getWebhookInfo", {})) as { url?: string; pending_update_count?: number };
+}
+
+export async function deleteTelegramWebhook(dropPendingUpdates = false): Promise<void> {
+  await callTelegramApi("deleteWebhook", {
+    drop_pending_updates: dropPendingUpdates
+  });
+}
+
 async function callTelegramApi(method: string, payload: Record<string, unknown>): Promise<unknown> {
   const maxAttempts = 3;
   let lastError: unknown;
@@ -122,6 +132,13 @@ function splitTelegramMessage(text: string): string[] {
   }
   if (remaining) parts.push(remaining);
   return parts;
+}
+
+function redactMessageText(text: string | undefined): string | undefined {
+  if (!text) return undefined;
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 160) return normalized;
+  return `${normalized.slice(0, 160)}...[truncated:${normalized.length}]`;
 }
 
 function sleep(ms: number): Promise<void> {

@@ -132,6 +132,7 @@ cp .env.example .env
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
+TELEGRAM_POLL_DELETE_WEBHOOK=false
 TELEGRAM_OWNER_ID=your_telegram_user_id
 AI_PROVIDER=mock
 PORT=3000
@@ -190,6 +191,7 @@ Bot 主動呼叫 Telegram getUpdates
 ```text
 同一個 TELEGRAM_BOT_TOKEN 不要在多個地方同時跑 poll。
 正式放到 NAS 時，建議用服務管理器或容器方式維持常駐與自動重啟。
+如果同一個 bot 曾設定 webhook，poll 啟動時會提示；只有在 TELEGRAM_POLL_DELETE_WEBHOOK=true 時才會自動移除 webhook。
 ```
 
 ## Webhook 模式
@@ -230,6 +232,7 @@ ALLOWED_TELEGRAM_USER_IDS 可設定固定白名單。
 ```text
 .env
 data/security_config.json
+data/task_state.json
 poll log
 node_modules
 dist
@@ -248,6 +251,7 @@ Local mock task flow
 n8n mock bridge
 NAS mock bridge
 TypeScript typecheck
+本機 task/project 狀態持久化
 ```
 
 尚未完成：
@@ -256,6 +260,6 @@ TypeScript typecheck
 正式 NAS bridge
 正式 n8n webhook client
 正式專案索引
-任務持久化資料庫
+正式任務資料庫
 正式文件輸出流程
 ```

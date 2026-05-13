@@ -15,6 +15,7 @@ if (!["mock", "openai"].includes(aiProvider)) {
 export const env = {
   telegramBotToken: required("TELEGRAM_BOT_TOKEN"),
   telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+  telegramPollDeleteWebhook: parseBoolean(process.env.TELEGRAM_POLL_DELETE_WEBHOOK),
   telegramOwnerId: parseOptionalUserId(process.env.TELEGRAM_OWNER_ID),
   allowedTelegramUserIds: parseAllowedUserIds(process.env.ALLOWED_TELEGRAM_USER_IDS),
   aiProvider: aiProvider as "mock" | "openai",
@@ -41,4 +42,9 @@ function parseAllowedUserIds(value: string | undefined): Set<number> {
   }
 
   return ids;
+}
+
+function parseBoolean(value: string | undefined): boolean {
+  if (!value) return false;
+  return ["1", "true", "yes", "on"].includes(value.trim().toLowerCase());
 }

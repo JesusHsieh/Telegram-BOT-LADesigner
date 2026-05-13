@@ -1,9 +1,21 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import type { SearchResult, TaskRecord, UserTaskContext } from "./types.js";
 
 const tasks = new Map<string, TaskRecord>();
 const userContexts = new Map<number, UserTaskContext>();
 const activeJobByUser = new Map<number, string>();
 const searchResultsByJob = new Map<string, SearchResult[]>();
+const statePath = join(process.cwd(), "data", "task_state.json");
+
+type PersistedTaskState = {
+  tasks: TaskRecord[];
+  userContexts: Array<[number, UserTaskContext]>;
+  activeJobByUser: Array<[number, string]>;
+  searchResultsByJob: Array<[string, SearchResult[]]>;
+};
+
+hydrateState();
 
 export function createJobId(prefix: string): string {
   const now = new Date();
@@ -13,7 +25,9 @@ export function createJobId(prefix: string): string {
   const hh = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const ss = String(now.getSeconds()).padStart(2, "0");
-  return `${prefix}_${yyyy}${mm}${dd}_${hh}${mi}${ss}`;
+  const ms = String(now.getMilliseconds()).padStart(3, "0");
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${prefix}_${yyyy}${mm}${dd}_${hh}${mi}${ss}${ms}_${suffix}`;
 }
 
 export function saveTask(userId: number | undefined, task: TaskRecord): TaskRecord {
@@ -35,6 +49,7 @@ export function saveTask(userId: number | undefined, task: TaskRecord): TaskReco
     }
     userContexts.set(userId, context);
   }
+  persistState();
   return task;
 }
 
@@ -46,6 +61,7 @@ export function updateTask(jobId: string, patch: Partial<TaskRecord>): TaskRecor
   if (next.user_id && activeJobByUser.get(next.user_id) === jobId && next.status !== "pending") {
     activeJobByUser.delete(next.user_id);
   }
+  persistState();
   return next;
 }
 
@@ -64,6 +80,7 @@ export function updateUserContext(userId: number | undefined, patch: Partial<Use
   if (!userId) return {};
   const next = { ...getUserContext(userId), ...patch };
   userContexts.set(userId, next);
+  persistState();
   return next;
 }
 
@@ -97,6 +114,7 @@ export function cancelActiveTask(userId: number | undefined): TaskRecord | undef
   if (!active || !userId) return undefined;
   const cancelled = updateTask(active.job_id, { status: "cancelled" });
   activeJobByUser.delete(userId);
+  persistState();
   return cancelled;
 }
 
@@ -106,11 +124,13 @@ export function clearUserTaskState(userId: number | undefined): UserTaskContext 
   const current = getUserContext(userId);
   const next: UserTaskContext = { current_project_id: current.current_project_id };
   userContexts.set(userId, next);
+  persistState();
   return next;
 }
 
 export function saveSearchResults(jobId: string, results: SearchResult[]): void {
   searchResultsByJob.set(jobId, results);
+  persistState();
 }
 
 export function getSearchResults(jobId: string | undefined): SearchResult[] {
@@ -128,4 +148,58 @@ export function resolveDefaultMakeSummaryTask(userId: number | undefined): TaskR
 
 export function resolveDefaultMakeReportTask(userId: number | undefined): TaskRecord | undefined {
   return getLastTask(userId);
+}
+
+function hydrateState(): void {
+  if (!existsSync(statePath)) return;
+
+  try {
+    const parsed = JSON.parse(readFileSync(statePath, "utf8")) as Partial<PersistedTaskState>;
+
+    for (const task of parsed.tasks ?? []) {
+      if (task && typeof task.job_id === "string") {
+        tasks.set(task.job_id, task);
+      }
+    }
+
+    for (const [rawUserId, context] of parsed.userContexts ?? []) {
+      if (isPositiveInteger(rawUserId)) {
+        userContexts.set(rawUserId, context ?? {});
+      }
+    }
+
+    for (const [rawUserId, jobId] of parsed.activeJobByUser ?? []) {
+      if (isPositiveInteger(rawUserId) && typeof jobId === "string") {
+        activeJobByUser.set(rawUserId, jobId);
+      }
+    }
+
+    for (const [jobId, results] of parsed.searchResultsByJob ?? []) {
+      if (typeof jobId === "string" && Array.isArray(results)) {
+        searchResultsByJob.set(jobId, results);
+      }
+    }
+  } catch (error) {
+    console.warn(`Could not load task state from ${statePath}:`, error);
+  }
+}
+
+function persistState(): void {
+  const state: PersistedTaskState = {
+    tasks: [...tasks.values()],
+    userContexts: [...userContexts.entries()],
+    activeJobByUser: [...activeJobByUser.entries()],
+    searchResultsByJob: [...searchResultsByJob.entries()]
+  };
+
+  try {
+    mkdirSync(dirname(statePath), { recursive: true });
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+  } catch (error) {
+    console.warn(`Could not persist task state to ${statePath}:`, error);
+  }
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && Number(value) > 0;
 }

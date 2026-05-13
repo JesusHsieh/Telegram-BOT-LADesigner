@@ -2,6 +2,7 @@ node_modules/
 dist/
 .env
 data/security_config.json
+data/task_state.json
 *.log
 .DS_Store
 npm-debug.log*

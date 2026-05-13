@@ -10,7 +10,7 @@ export async function generateTaskSummary(input: {
   project?: ProjectContext;
 }): Promise<string> {
   if (env.aiProvider === "mock") {
-    return buildMockSummary(input.taskType, input.rawInput, input.project);
+    return buildMockSummary(input);
   }
 
   const client = new OpenAI({ apiKey: env.openaiApiKey });
@@ -108,19 +108,27 @@ export function generateMarkdownReport(task: TaskRecord, kind: "summary" | "repo
   ].join("\n");
 }
 
-function buildMockSummary(taskType: TaskType, rawInput: string, project?: ProjectContext): string {
+function buildMockSummary(input: {
+  taskType: TaskType;
+  rawInput: string;
+  taskData: unknown;
+  project?: ProjectContext;
+}): string {
   return [
     "📌 任務類型",
-    `${taskType}`,
+    `${input.taskType}`,
     "",
     "📁 目前專案",
-    project ? `${project.name}（${project.project_id}）` : "未設定",
+    input.project ? `${input.project.name}（${input.project.project_id}）` : "未設定",
     "",
     "🔍 資料來源",
     "目前為測試資料 / Mock Data；尚未讀取真實 NAS、政府 API 或正式專案資料夾。",
     "",
+    "🔌 Executor Mock",
+    ...formatExecutorResultLines(input.taskData),
+    "",
     "📄 關鍵結果",
-    ...getMockResultLines(taskType, rawInput),
+    ...getMockResultLines(input.taskType, input.rawInput),
     "",
     "⚠️ 風險 / 不確定事項",
     "- 這是 mock 模式，不能作為正式結論。",
@@ -150,6 +158,35 @@ function getMockResultLines(taskType: TaskType, rawInput: string): string[] {
   return byTask[taskType];
 }
 
+function formatExecutorResultLines(taskData: unknown): string[] {
+  const results = getExecutorResults(taskData);
+  if (results.length === 0) return ["- local mock only"];
+  return results.map((result) => {
+    const name = result.workflow ?? result.operation ?? result.bridge ?? "mock";
+    const summary = result.summary ? `：${result.summary.replace(/\n/g, " / ")}` : "";
+    return `- ${result.bridge ?? "executor"} / ${name}${summary}`;
+  });
+}
+
+function getExecutorResults(taskData: unknown): Array<{
+  bridge?: string;
+  workflow?: string;
+  operation?: string;
+  summary?: string;
+}> {
+  const data = taskData as {
+    executor_policy?: {
+      results?: Array<{
+        bridge?: string;
+        workflow?: string;
+        operation?: string;
+        summary?: string;
+      }>;
+    };
+  };
+  return Array.isArray(data?.executor_policy?.results) ? data.executor_policy.results : [];
+}
+
 function extractProjectContext(taskData: unknown): string {
   const data = taskData as { project_context?: ProjectContext };
   if (!data?.project_context) return "未設定。";
@@ -169,6 +206,8 @@ function extractProjectContext(taskData: unknown): string {
 function summarizeTaskData(taskData: unknown): string {
   const data = taskData as { matched_items?: SearchResult[] };
   const items = data?.matched_items ?? [];
-  if (items.length === 0) return "- 未命中 mock data。";
-  return items.map((item, index) => `${index + 1}. ${item.title}：${item.summary}`).join("\n");
+  const executorLines = formatExecutorResultLines(taskData).map((line) => `- ${line.replace(/^- /, "")}`);
+  const itemLines = items.map((item, index) => `${index + 1}. ${item.title}：${item.summary}`);
+  if (items.length === 0 && executorLines.length === 0) return "- 未命中 mock data。";
+  return [...executorLines, ...itemLines].join("\n");
 }
