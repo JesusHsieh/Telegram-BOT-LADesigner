@@ -78,6 +78,7 @@ check  -> local + n8n mock
 管理與權限：
 
 ```text
+/start
 /whoami
 /policy
 /auth list

@@ -11,6 +11,10 @@ import { handleOfficeCommand } from "../office/taskRouter.js";
 export async function handleCommand(input: string, user: TelegramUserContext): Promise<string> {
   const rawCommand = readRawCommand(input);
 
+  if (rawCommand === "start") {
+    return formatStartMessage(user);
+  }
+
   if (rawCommand === "whoami") {
     return formatWhoAmI(user);
   }
@@ -24,6 +28,41 @@ export async function handleCommand(input: string, user: TelegramUserContext): P
   }
 
   return handleOfficeCommand(input, user);
+}
+
+export function formatStartMessage(user: TelegramUserContext): string {
+  const role = getAccessRole(user);
+  const isAllowed = role !== "blocked";
+
+  return [
+    "歡迎使用 LA Design Assistant。",
+    "",
+    "這是一個景觀設計 Telegram AI 助理，目前定位為公司內部橋接型 bot。",
+    "",
+    "我可以協助：",
+    "- 設定目前工作專案",
+    "- 整理基地、現場、植栽、成本、RFI、簡報、審查與檢核任務",
+    "- 依 Task Router 判斷任務方向",
+    "- 以 mock n8n / mock NAS bridge 驗證未來工作流",
+    "- 產生任務摘要與 Markdown 報告",
+    "",
+    "目前狀態：",
+    `- 你的 Telegram user id：${user.id ?? "無法取得"}`,
+    `- 你的角色：${getAccessRoleLabel(role)}`,
+    `- 使用權限：${isAllowed ? "已授權" : "尚未授權"}`,
+    "",
+    isAllowed
+      ? "開始方式：先使用 /project set [project_id] 設定專案，再使用 /do、/find、/read、/make 等任務指令。"
+      : "請把上方 Telegram user id 提供給系統擁有者，請對方用 /auth add [user_id] 加入授權。",
+    "",
+    "常用指令：",
+    "/help",
+    "/whoami",
+    "/policy",
+    "/project set nangang_airport",
+    "/do brief 簡報需求",
+    "/make report"
+  ].join("\n");
 }
 
 function formatWhoAmI(user: TelegramUserContext): string {

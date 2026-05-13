@@ -1,7 +1,7 @@
 import { env } from "../utils/env.js";
 import { logger } from "../utils/logger.js";
 import { canUseBot, getAccessRole, type TelegramUserContext } from "../security/accessControl.js";
-import { handleCommand } from "./commands.js";
+import { formatStartMessage, handleCommand } from "./commands.js";
 import type { TelegramUpdate } from "./types.js";
 
 const telegramApiBase = `https://api.telegram.org/bot${env.telegramBotToken}`;
@@ -26,6 +26,12 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<void
     textPreview: redactMessageText(message.text ?? message.caption)
   });
 
+  const text = message.text ?? message.caption;
+  if (isStartCommand(text)) {
+    await sendTelegramMessage(message.chat.id, formatStartMessage(user));
+    return;
+  }
+
   if (!canUseBot(user)) {
     logger.warn("Rejected unauthorized Telegram user", {
       userId: user.id,
@@ -45,7 +51,6 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<void
     return;
   }
 
-  const text = message.text ?? message.caption;
   if (!text) {
     await sendTelegramMessage(message.chat.id, "目前只支援文字指令。檔案、圖片與 PDF 讀取會在後續工具階段開放。");
     return;
@@ -53,6 +58,10 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<void
 
   const reply = await handleCommand(text, user);
   await sendTelegramMessage(message.chat.id, reply);
+}
+
+function isStartCommand(text: string | undefined): boolean {
+  return /^\/start(?:@\w+)?(?:\s|$)/i.test(text?.trim() ?? "");
 }
 
 export async function sendTelegramMessage(chatId: number, text: string): Promise<void> {
